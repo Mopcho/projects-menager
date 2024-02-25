@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	err := SetupStorage(false)
+	err := SetupStorage(true)
 
 	if err != nil {
 		log.Fatal(err)
@@ -19,6 +19,12 @@ func main() {
 
 	myWindow.Resize(fyne.Size{Width: 1080, Height: 980})
 
-	myWindow.SetContent(App())
+	eventsChannel := make(chan string)
+
+	appData := AppData{
+		eventsChannel: eventsChannel,
+	} 
+
+	myWindow.SetContent(appData.App())
 	myWindow.ShowAndRun()
 }

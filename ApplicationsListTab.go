@@ -8,7 +8,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func applicationsListTab() *fyne.Container {
+func (appData *AppData) applicationsListTab() *fyne.Container {
 	applications, err := GetApplications()
 
 	if err != nil {

@@ -6,7 +6,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func addAppComponent() *fyne.Container {
+func (appData *AppData) addAppComponent() *fyne.Container {
 	nameEntry := widget.NewEntry()
 	nameFormItem := widget.NewFormItem("Name of project:", nameEntry)
 
@@ -29,6 +29,8 @@ func addAppComponent() *fyne.Container {
 			// TODO: Use logger here that saves log to a file
 			return
 		}
+
+		appData.eventsChannel <- "Refresh"
 	})
 
 	form := widget.NewForm(nameFormItem, locationFormItem, commandsFormItem)
