@@ -6,25 +6,29 @@ import (
 	"os/exec"
 	"strings"
 
-	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"golang.org/x/image/colornames"
 )
 
-func (appData *AppData) applicationsListTab() *fyne.Container {
+func (appData *AppData) applicationsListTab() *container.Scroll {
 	applications, err := GetApplications()
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	container := container.NewVBox()
+	vbox := container.NewVBox()
 
 	for _, application := range applications {
-		container.Add(signeleAppCard(application))
+		vbox.Add(signeleAppCard(application))
+		separator := NewCustomSeparator(colornames.Aliceblue, 1)
+		vbox.Add(separator)
 	}
+
+	content := container.NewVScroll(vbox)
 	
-	return container
+	return content
 }
 
 func signeleAppCard(application Application) *widget.Card {
@@ -40,6 +44,6 @@ func signeleAppCard(application Application) *widget.Card {
 
 		fmt.Println(string(out))
 	})
-	card := widget.NewCard(application.Name, "", playBtn)
+	card := widget.NewCard(application.Name, application.Location, playBtn)
 	return card
 }
