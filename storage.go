@@ -127,3 +127,13 @@ func CreateApplication(createData ApplicationCreateData) error {
 
 	return nil
 }
+
+func GetApplications() (Applications, error) {
+	storageData, err := GetStorageData()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return storageData.Applications, nil
+}
