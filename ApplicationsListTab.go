@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 	"golang.org/x/image/colornames"
@@ -21,7 +22,7 @@ func (appData *AppData) applicationsListTab() *container.Scroll {
 	vbox := container.NewVBox()
 
 	for _, application := range applications {
-		vbox.Add(signeleAppCard(application))
+		vbox.Add(appData.signeleAppCard(application))
 		separator := NewCustomSeparator(colornames.Aliceblue, 1)
 		vbox.Add(separator)
 	}
@@ -31,7 +32,7 @@ func (appData *AppData) applicationsListTab() *container.Scroll {
 	return content
 }
 
-func signeleAppCard(application Application) *widget.Card {
+func (appData *AppData) signeleAppCard(application Application) *fyne.Container {
 	playBtn := widget.NewButton("Execute Start Command", func() {
 		args := strings.Split(application.StartCommand, " ") 
 		cmd := exec.Command(args[0], args[1:]...)
@@ -44,6 +45,22 @@ func signeleAppCard(application Application) *widget.Card {
 
 		fmt.Println(string(out))
 	})
-	card := widget.NewCard(application.Name, application.Location, playBtn)
-	return card
+
+	deletBtn := widget.NewButton("Delete This App", func() {
+		err := DeleteApplication(application.ID)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		appData.eventsChannel <- "Refresh"
+	})
+
+	hBox := container.NewHBox(playBtn, deletBtn)
+
+	card := widget.NewCard(application.Name, fmt.Sprintf("Location: %v", application.Location), widget.NewLabel("ID: " + application.ID))
+
+	vBox := container.NewVBox(card, hBox)
+
+	return vBox
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 
 	"github.com/google/uuid"
@@ -82,7 +83,7 @@ func GetStorageData() (StorageFormat, error) {
 }
 
 func rewriteStorage(newStorageData StorageFormat) error {
-	file, err := os.OpenFile(storagePath, os.O_CREATE, 0660)
+	file, err := os.OpenFile(storagePath, os.O_RDWR|os.O_TRUNC, 0660)
 
 	if err != nil {
 		return err
@@ -136,4 +137,22 @@ func GetApplications() (Applications, error) {
 	}
 
 	return storageData.Applications, nil
+}
+
+func DeleteApplication(id string) error {
+	storageData, err := GetStorageData()
+
+	if err != nil {
+		return err
+	}
+
+	if _, ok := storageData.Applications[id]; !ok {
+		return errors.New("App does not exist")
+	}
+
+	delete(storageData.Applications, id)
+
+	err = rewriteStorage(storageData)
+
+	return err
 }
