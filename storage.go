@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"path/filepath"
 
 	"github.com/google/uuid"
 )
-
-const storagePath = "./database.json"
 
 type StorageFormat struct {
 	Applications Applications `json:"applications"`
@@ -29,16 +28,45 @@ type ApplicationCreateData struct {
 	Location     string `json:"location"`
 }
 
+func getDefaultDir() string {
+	var defaultDir string
+	if osname := os.Getenv("OS"); osname == "Windows_NT" {
+		appdata := os.Getenv("APPDATA")
+		defaultDir = filepath.Join(appdata, "MopManager")
+	} else {
+		home := os.Getenv("HOME")
+		defaultDir = filepath.Join(home, ".mopmanager")
+	}
+
+	return defaultDir
+}
+
+func getDbPath() string {
+	defaultDir := getDefaultDir()
+	dbFile := filepath.Join(defaultDir, "database.json")
+	return dbFile
+}
+
 func SetupStorage(forceRecreate bool) error {
+	defaultDir := getDefaultDir()
+	dbPath := getDbPath()
+
+	// Ensure the directory exists
+	err := os.MkdirAll(defaultDir, 0660)
+
+	if err != nil {
+		return err
+	}
+	
 	recreateFile := false
-	stat, err := os.Stat(storagePath)
+	stat, err := os.Stat(dbPath)
 
 	if err != nil || stat.Size() == 0 {
 		recreateFile = true
 	}
 
 	if recreateFile || forceRecreate {
-		file, err := os.Create(storagePath)
+		file, err := os.Create(dbPath)
 
 		if err != nil {
 			return err
@@ -65,7 +93,7 @@ func SetupStorage(forceRecreate bool) error {
 }
 
 func GetStorageData() (StorageFormat, error) {
-	bytes, err := os.ReadFile(storagePath)
+	bytes, err := os.ReadFile(getDbPath())
 
 	if err != nil {
 		return StorageFormat{}, err
@@ -83,7 +111,7 @@ func GetStorageData() (StorageFormat, error) {
 }
 
 func rewriteStorage(newStorageData StorageFormat) error {
-	file, err := os.OpenFile(storagePath, os.O_RDWR|os.O_TRUNC, 0660)
+	file, err := os.OpenFile(getDbPath(), os.O_RDWR|os.O_TRUNC, 0660)
 
 	if err != nil {
 		return err
